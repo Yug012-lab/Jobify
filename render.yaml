@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: jobify
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    disk:
+      name: jobify-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /data/jobify.db
+      - key: PORT
+        value: 3000

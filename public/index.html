@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jobify — Career Dashboard</title>
+<style>
+/* ── Reset & base ─────────────────────────────────────────────────────────── */
+:root{
+  --bg:#06060a;--sb:#08080e;--surf:#0c0c14;--bd:rgba(255,255,255,0.06);
+  --bdh:rgba(255,255,255,0.13);--tx:#f0f0f4;--mu:#6b6b80;--su:#35354a;
+  --as:rgba(139,92,246,0.14);--accent:#7c3aed;--accent2:#6366f1;
+  --green:#6ee7b7;--yellow:#fde68a;--red:#fca5a5;--blue:#93c5fd;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,'Segoe UI',system-ui,sans-serif;font-size:13px;line-height:1.5}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:99px}
+select option{background:#111}
+a{color:inherit;text-decoration:none}
+
+/* ── Auth Screen ─────────────────────────────────────────────────────────── */
+#auth-screen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:var(--bg);
+  background-image:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(124,58,237,.18),transparent);
+}
+.auth-card{
+  width:100%;max-width:400px;background:#0b0b14;
+  border:1px solid var(--bd);border-radius:18px;padding:36px;
+  box-shadow:0 40px 100px rgba(0,0,0,.7);
+}
+.auth-logo{font-size:26px;font-family:Georgia,serif;font-style:italic;
+  background:linear-gradient(130deg,#c4b5fd,#818cf8,#60a5fa);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  text-align:center;margin-bottom:4px}
+.auth-tagline{font-size:11px;color:var(--mu);text-align:center;margin-bottom:28px;
+  letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.auth-tabs{display:flex;background:rgba(255,255,255,.03);border:1px solid var(--bd);
+  border-radius:9px;padding:3px;margin-bottom:24px;gap:2px}
+.auth-tab{flex:1;padding:7px;text-align:center;font-size:12px;font-weight:600;
+  border-radius:7px;cursor:pointer;color:var(--mu);transition:all .15s;border:none;background:transparent;font-family:inherit}
+.auth-tab.active{background:rgba(124,58,237,.2);color:#c4b5fd;border:1px solid rgba(124,58,237,.3)}
+.auth-tab:not(.active):hover{color:var(--tx)}
+.auth-field{margin-bottom:14px}
+.auth-label{display:block;font-size:9px;font-weight:700;color:var(--mu);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.auth-input{width:100%;background:rgba(255,255,255,.03);border:1px solid var(--bd);
+  border-radius:8px;padding:10px 12px;color:var(--tx);font-size:13px;outline:none;
+  font-family:inherit;transition:border-color .15s}
+.auth-input:focus{border-color:rgba(139,92,246,.6);box-shadow:0 0 0 3px rgba(124,58,237,.1)}
+.auth-input::placeholder{color:rgba(107,107,128,.6)}
+.auth-btn{width:100%;padding:11px;border-radius:9px;border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;cursor:pointer;font-weight:700;font-size:13px;font-family:inherit;
+  box-shadow:0 4px 18px rgba(124,58,237,.3);transition:all .15s;margin-top:6px;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.auth-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 28px rgba(124,58,237,.45)}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.auth-err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.22);
+  color:#fca5a5;border-radius:8px;padding:10px 12px;font-size:12px;
+  margin-bottom:14px;display:none}
+.auth-err.show{display:block}
+.auth-footer{font-size:10px;color:var(--su);text-align:center;margin-top:18px}
+
+/* ── App Screen ──────────────────────────────────────────────────────────── */
+#app-screen{display:none;height:100vh;overflow:hidden}
+#app{display:flex;height:100%;background:var(--bg)}
+
+/* Sidebar */
+#sb{width:220px;flex-shrink:0;background:var(--sb);border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;padding:24px 0}
+.brand{padding:0 20px 22px}
+.logo{font-size:21px;font-family:Georgia,serif;font-style:italic;
+  background:linear-gradient(130deg,#c4b5fd,#818cf8,#60a5fa);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:-.5px;line-height:1}
+.logo-sub{font-size:9px;color:var(--mu);margin-top:4px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase}
+.div{height:1px;background:var(--bd);margin:0 20px 18px}
+nav{padding:0 10px;flex:1}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:8px;
+  margin-bottom:2px;cursor:pointer;font-size:13px;color:var(--mu);
+  border:1px solid transparent;transition:all .12s;user-select:none}
+.ni.act{color:var(--tx);background:var(--as);border-color:rgba(139,92,246,.22);font-weight:600}
+.ni:not(.act):hover{background:rgba(255,255,255,.04);color:var(--tx)}
+.ni-icon{font-size:14px;opacity:.8}
+.nb{margin-left:auto;font-size:10px;font-weight:700;
+  background:rgba(139,92,246,.22);color:#a78bfa;
+  padding:1px 7px;border-radius:99px;border:1px solid rgba(139,92,246,.28)}
+.offer-banner{margin:0 10px 14px;padding:9px 12px;border-radius:9px;
+  background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.22);cursor:default}
+.ub{padding:15px 20px 0;border-top:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.av{width:32px;height:32px;border-radius:99px;
+  background:linear-gradient(135deg,#8b5cf6,#3b82f6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;flex-shrink:0;
+  box-shadow:0 0 0 2px rgba(139,92,246,.22)}
+.logout-btn{margin-left:auto;padding:4px 6px;border-radius:6px;border:1px solid var(--bd);
+  background:transparent;color:var(--mu);cursor:pointer;font-size:10px;
+  font-family:inherit;transition:all .12s}
+.logout-btn:hover{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#fca5a5}
+
+/* Main */
+#main{flex:1;overflow:auto;padding:28px 32px}
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.sub{font-size:12px;color:var(--mu);margin-top:5px}
+.btn-p{display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;
+  border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;cursor:pointer;font-weight:700;font-size:13px;font-family:inherit;
+  box-shadow:0 4px 18px rgba(124,58,237,.3);transition:all .14s}
+.btn-p:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 28px rgba(124,58,237,.44)}
+.btn-p:disabled{opacity:.6;cursor:not-allowed}
+
+/* Stats */
+.stats{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.sc{flex:1;min-width:110px;background:var(--surf);border:1px solid var(--bd);
+  border-radius:13px;padding:17px 18px;position:relative;overflow:hidden;
+  transition:all .15s;cursor:default}
+.sc:hover{border-color:var(--bdh);transform:translateY(-1px)}
+.sc-line{position:absolute;top:0;left:0;right:0;height:2px;border-radius:13px 13px 0 0;opacity:.7}
+.sc-val{font-size:28px;font-weight:800;font-family:'Courier New',monospace;
+  line-height:1;letter-spacing:-1px}
+.sc-label{font-size:11px;color:var(--mu);margin-top:6px;font-weight:500}
+.sc-rate{font-size:10px;margin-top:2px;font-weight:600;opacity:.8}
+
+/* Toolbar */
+.tb{display:flex;gap:9px;margin-bottom:18px;align-items:center;flex-wrap:wrap}
+.fg{display:flex;background:var(--surf);border:1px solid var(--bd);
+  border-radius:9px;overflow:hidden;flex-shrink:0}
+.fb{padding:7px 12px;font-size:11px;border:none;cursor:pointer;font-family:inherit;
+  background:transparent;color:var(--mu);transition:all .1s;border-right:1px solid var(--bd)}
+.fb:last-child{border-right:none}
+.fb.act{background:var(--as);color:#a78bfa;font-weight:600}
+.fb:not(.act):hover{color:var(--tx)}
+.sw{position:relative;flex:1;min-width:160px}
+.si{font-size:14px;position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--mu);pointer-events:none}
+.srch{width:100%;background:var(--surf);border:1px solid var(--bd);border-radius:9px;
+  padding:7px 10px 7px 30px;color:var(--tx);font-size:13px;outline:none;
+  font-family:inherit;transition:border-color .15s}
+.srch:focus{border-color:rgba(139,92,246,.55)}
+.srch::placeholder{color:rgba(107,107,128,.6)}
+
+/* Table */
+.tbl{background:var(--surf);border:1px solid var(--bd);border-radius:13px;overflow:hidden}
+.th{display:grid;grid-template-columns:1.6fr 1.5fr 108px 88px 1fr 80px;
+  padding:10px 18px;border-bottom:1px solid var(--bd);
+  font-size:9px;font-weight:700;color:var(--su);text-transform:uppercase;letter-spacing:.1em}
+.tr{display:grid;grid-template-columns:1.6fr 1.5fr 108px 88px 1fr 80px;
+  padding:13px 18px;align-items:center;
+  border-bottom:1px solid rgba(255,255,255,.03);transition:background .1s;cursor:default}
+.tr:last-child{border-bottom:none}
+.tr:hover{background:rgba(255,255,255,.018)}
+.co{font-weight:700;font-size:13px;line-height:1.2}
+.loc{font-size:10px;color:var(--mu);margin-top:2px}
+.ro{font-size:12px;color:var(--mu);padding-right:10px;line-height:1.4}
+.dt{font-size:11px;color:var(--mu);font-family:'Courier New',monospace}
+.nt{font-size:11px;color:var(--mu);overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;max-width:160px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 7px;
+  border-radius:99px;font-size:10px;font-weight:600;white-space:nowrap}
+.bdot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.ra{display:flex;gap:5px;justify-content:flex-end}
+.ab{padding:4px 9px;border-radius:6px;border:1px solid var(--bd);background:transparent;
+  color:var(--mu);cursor:pointer;font-size:10px;font-family:inherit;transition:all .12s}
+.ab:hover{background:rgba(255,255,255,.06);border-color:var(--bdh);color:var(--tx)}
+.db{padding:4px 8px;border-radius:6px;border:1px solid rgba(239,68,68,.2);
+  background:rgba(239,68,68,.06);color:#fca5a5;cursor:pointer;font-size:10px;font-family:inherit}
+.db:hover{background:rgba(239,68,68,.14)}
+
+/* Kanban */
+.kb{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start}
+.kc-hdr{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.kc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.kc-lbl{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;
+  letter-spacing:.09em;flex:1}
+.kc-cnt{font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px}
+.kc{background:var(--surf);border:1px solid var(--bd);border-radius:11px;
+  padding:13px 14px;margin-bottom:9px;transition:all .15s;cursor:default}
+.kc:hover{border-color:var(--bdh);transform:translateY(-1px)}
+
+/* Modal */
+#mw{display:none;position:fixed;inset:0;background:rgba(0,0,0,.84);
+  backdrop-filter:blur(8px);z-index:100;align-items:center;justify-content:center;
+  padding:20px}
+#mw.open{display:flex}
+.modal{background:#0e0e18;border:1px solid rgba(255,255,255,.1);border-radius:16px;
+  padding:28px;width:100%;max-width:480px;
+  box-shadow:0 40px 100px rgba(0,0,0,.8);
+  animation:jbUp .18s cubic-bezier(.16,1,.3,1)}
+@keyframes jbUp{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+.fl{display:block;font-size:9px;font-weight:700;color:var(--mu);
+  margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase}
+.fi{width:100%;background:rgba(255,255,255,.03);border:1px solid var(--bd);
+  border-radius:8px;padding:9px 11px;color:var(--tx);font-size:13px;outline:none;
+  font-family:inherit;transition:border-color .15s;margin-bottom:12px}
+.fi:focus{border-color:rgba(139,92,246,.55);box-shadow:0 0 0 3px rgba(124,58,237,.08)}
+.fi::placeholder{color:rgba(107,107,128,.6)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ma{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
+.btn-ghost{padding:9px 16px;border-radius:8px;border:1px solid var(--bd);
+  background:transparent;color:var(--mu);cursor:pointer;font-size:13px;font-family:inherit}
+.btn-ghost:hover{background:rgba(255,255,255,.05);color:var(--tx)}
+.modal-err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);
+  color:#fca5a5;border-radius:7px;padding:8px 11px;font-size:12px;
+  margin-bottom:10px;display:none}
+.modal-err.show{display:block}
+
+/* Toasts */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:999;
+  display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:12px 16px;border-radius:10px;font-size:12px;font-weight:600;
+  min-width:220px;max-width:340px;opacity:0;transform:translateY(12px) scale(.96);
+  transition:all .22s cubic-bezier(.16,1,.3,1);pointer-events:auto;
+  display:flex;align-items:center;gap:9px;box-shadow:0 8px 32px rgba(0,0,0,.5);
+  border:1px solid}
+.toast.show{opacity:1;transform:none}
+.toast.success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.28);color:#6ee7b7}
+.toast.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.25);color:#fca5a5}
+.toast.info{background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.28);color:#a5b4fc}
+
+/* Loading overlay */
+#loading-overlay{position:fixed;inset:0;background:rgba(6,6,10,.8);
+  backdrop-filter:blur(4px);z-index:500;display:none;
+  align-items:center;justify-content:center;flex-direction:column;gap:16px}
+#loading-overlay.show{display:flex}
+.spinner{width:36px;height:36px;border:3px solid rgba(139,92,246,.2);
+  border-top-color:#8b5cf6;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Inline loading */
+.content-skeleton{padding:48px 20px;text-align:center;color:var(--mu)}
+.foot{margin-top:16px;font-size:10px;color:var(--su);text-align:center}
+</style>
+</head>
+<body>
+
+<!-- ── Auth Screen ──────────────────────────────────────────────────────────── -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">Jobify</div>
+    <div class="auth-tagline">Career Dashboard</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="Auth.switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="Auth.switchTab('register')">Create Account</button>
+    </div>
+
+    <div id="auth-err" class="auth-err"></div>
+
+    <!-- Login form -->
+    <div id="tab-login">
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="l-email" type="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Password</label>
+        <input class="auth-input" id="l-password" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="auth-btn" id="login-btn" onclick="Auth.login()">
+        <span id="login-btn-text">Sign In</span>
+      </button>
+    </div>
+
+    <!-- Register form -->
+    <div id="tab-register" style="display:none">
+      <div class="auth-field">
+        <label class="auth-label">Full Name</label>
+        <input class="auth-input" id="r-name" type="text" placeholder="Yug Verma" autocomplete="name">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="r-email" type="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Password</label>
+        <input class="auth-input" id="r-password" type="password" placeholder="Min 8 chars, 1 uppercase, 1 number" autocomplete="new-password">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">College / Institution <span style="color:var(--su)">(optional)</span></label>
+        <input class="auth-input" id="r-institution" type="text" placeholder="e.g. IGNOU Delhi · BCA">
+      </div>
+      <button class="auth-btn" id="register-btn" onclick="Auth.register()">
+        <span id="register-btn-text">Create Account</span>
+      </button>
+    </div>
+
+    <div class="auth-footer">Jobify v1.0 · Your data stays on your server</div>
+  </div>
+</div>
+
+<!-- ── App Screen ───────────────────────────────────────────────────────────── -->
+<div id="app-screen">
+  <div id="app">
+    <!-- Sidebar -->
+    <div id="sb">
+      <div class="brand">
+        <div class="logo">Jobify</div>
+        <div class="logo-sub">Career Dashboard</div>
+      </div>
+      <div class="div"></div>
+      <nav>
+        <div class="ni act"><span class="ni-icon">≡</span>Applications<span class="nb" id="nb">0</span></div>
+      </nav>
+      <div class="offer-banner" id="ob" style="display:none">
+        <div id="ob-text" style="font-size:11px;color:#6ee7b7;font-weight:700"></div>
+        <div style="font-size:10px;color:var(--mu);margin-top:2px">Review and respond soon</div>
+      </div>
+      <div class="ub">
+        <div class="av" id="user-avatar">Y</div>
+        <div style="min-width:0">
+          <div id="user-name" style="font-size:13px;font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+          <div id="user-inst" style="font-size:10px;color:var(--mu);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+        </div>
+        <button class="logout-btn" onclick="Auth.logout()" title="Sign out">⏻</button>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div id="main">
+      <div class="hdr">
+        <div>
+          <div class="h1">Applications</div>
+          <div class="sub" id="sub-line">Loading…</div>
+        </div>
+        <button class="btn-p" onclick="Modal.open()">
+          <span style="font-size:17px;line-height:1">+</span> New Application
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="sc"><div class="sc-line" style="background:#a78bfa"></div><div class="sc-val" style="color:#a78bfa" id="s-total">—</div><div class="sc-label">Total Applied</div></div>
+        <div class="sc"><div class="sc-line" style="background:#fde68a"></div><div class="sc-val" style="color:#fde68a" id="s-int">—</div><div class="sc-label">Interviews</div><div class="sc-rate" style="color:#fde68a" id="s-ir"></div></div>
+        <div class="sc"><div class="sc-line" style="background:#6ee7b7"></div><div class="sc-val" style="color:#6ee7b7" id="s-off">—</div><div class="sc-label">Offers</div><div class="sc-rate" style="color:#6ee7b7" id="s-or"></div></div>
+        <div class="sc"><div class="sc-line" style="background:#fca5a5"></div><div class="sc-val" style="color:#fca5a5" id="s-rej">—</div><div class="sc-label">Rejected</div></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="tb">
+        <div class="fg" id="filter-group">
+          <button class="fb act" onclick="AppState.setFilter('All',this)">All</button>
+          <button class="fb" onclick="AppState.setFilter('Applied',this)">Applied</button>
+          <button class="fb" onclick="AppState.setFilter('Interview',this)">Interview</button>
+          <button class="fb" onclick="AppState.setFilter('Offer',this)">Offer</button>
+          <button class="fb" onclick="AppState.setFilter('Rejected',this)">Rejected</button>
+        </div>
+        <div class="sw">
+          <span class="si">⌕</span>
+          <input class="srch" id="srch" placeholder="Search company, role, location…" oninput="AppState.onSearch()">
+        </div>
+        <div class="fg">
+          <button class="fb act" id="vt-list" onclick="AppState.setView('list')">≡  List</button>
+          <button class="fb" id="vt-board" onclick="AppState.setView('board')" style="border-right:none">⊞  Board</button>
+        </div>
+      </div>
+
+      <!-- Content area -->
+      <div id="content"></div>
+      <div class="foot" id="foot"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add / Edit Modal ─────────────────────────────────────────────────────── -->
+<div id="mw">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+      <div>
+        <div style="font-size:16px;font-weight:700;font-family:Georgia,serif;font-style:italic;margin-bottom:4px" id="m-title">New Opportunity</div>
+        <div style="font-size:12px;color:var(--mu)" id="m-sub">Add a new role to your tracker</div>
+      </div>
+      <button onclick="Modal.close()" style="width:28px;height:28px;border-radius:99px;border:1px solid var(--bd);background:transparent;color:var(--mu);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;font-family:inherit">×</button>
+    </div>
+    <div id="modal-err" class="modal-err"></div>
+    <label class="fl">Company *</label>
+    <input class="fi" id="f-co" placeholder="e.g. Razorpay">
+    <label class="fl">Role *</label>
+    <input class="fi" id="f-ro" placeholder="e.g. Frontend Developer Intern">
+    <div class="frow">
+      <div>
+        <label class="fl">Status</label>
+        <select class="fi" id="f-st">
+          <option>Applied</option><option>Interview</option><option>Offer</option><option>Rejected</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl">Priority</label>
+        <select class="fi" id="f-pr">
+          <option>Low</option><option selected>Medium</option><option>High</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <div>
+        <label class="fl">Date Applied</label>
+        <input class="fi" id="f-dt" type="date" style="color-scheme:dark">
+      </div>
+      <div>
+        <label class="fl">Location</label>
+        <input class="fi" id="f-lo" placeholder="Bangalore · Remote">
+      </div>
+    </div>
+    <div class="frow">
+      <div>
+        <label class="fl">Salary / Stipend</label>
+        <input class="fi" id="f-sa" placeholder="₹45,000/month">
+      </div>
+      <div>
+        <label class="fl">Job URL</label>
+        <input class="fi" id="f-url" type="url" placeholder="https://…">
+      </div>
+    </div>
+    <label class="fl">Notes</label>
+    <textarea class="fi" id="f-no" rows="2" placeholder="Interview details, contacts, next steps…" style="resize:vertical;line-height:1.6;margin-bottom:0"></textarea>
+    <div class="ma">
+      <button class="btn-ghost" onclick="Modal.close()">Cancel</button>
+      <button class="btn-p" id="m-save-btn" onclick="Modal.save()" style="padding:9px 20px">
+        <span id="m-btn">Add Application</span>
+      </button>
+    </div>
+  </div>
+</div>
+<div id="mw" onclick="Modal.close()"></div>
+
+<!-- ── Toasts ───────────────────────────────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<!-- ── Loading overlay ─────────────────────────────────────────────────────── -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div style="font-size:12px;color:var(--mu)">Loading…</div>
+</div>
+
+<script>
+'use strict';
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const API_BASE = '/api';
+const TOKEN_KEY = 'jobify_token';
+
+const STATUS_META = {
+  Applied  : { c:'#93c5fd', bg:'rgba(59,130,246,.09)',  bd:'rgba(59,130,246,.22)' },
+  Interview: { c:'#fde68a', bg:'rgba(245,158,11,.09)',  bd:'rgba(245,158,11,.22)' },
+  Offer    : { c:'#6ee7b7', bg:'rgba(16,185,129,.09)',  bd:'rgba(16,185,129,.22)' },
+  Rejected : { c:'#fca5a5', bg:'rgba(239,68,68,.09)',   bd:'rgba(239,68,68,.22)'  },
+};
+
+// ── Utility: escape HTML to prevent XSS ────────────────────────────────────
+const esc = s => String(s ?? '')
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+// ── Toast notifications ──────────────────────────────────────────────────────
+const Toast = {
+  show(msg, type = 'info', duration = 3500) {
+    const icons = { success:'✓', error:'✕', info:'ℹ' };
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<span style="font-size:14px">${icons[type]||'ℹ'}</span><span>${esc(msg)}</span>`;
+    const c = document.getElementById('toast-container');
+    c.appendChild(el);
+    requestAnimationFrame(() => { requestAnimationFrame(() => el.classList.add('show')); });
+    setTimeout(() => {
+      el.classList.remove('show');
+      setTimeout(() => el.remove(), 300);
+    }, duration);
+  },
+  success : (m, d) => Toast.show(m, 'success', d),
+  error   : (m, d) => Toast.show(m, 'error', d),
+  info    : (m, d) => Toast.show(m, 'info', d),
+};
+
+// ── API client ───────────────────────────────────────────────────────────────
+const API = {
+  _token: localStorage.getItem(TOKEN_KEY),
+
+  setToken(t) {
+    this._token = t;
+    if (t) localStorage.setItem(TOKEN_KEY, t);
+    else    localStorage.removeItem(TOKEN_KEY);
+  },
+
+  async request(method, path, body) {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+    };
+    if (this._token) opts.headers['Authorization'] = `Bearer ${this._token}`;
+    if (body !== undefined) opts.body = JSON.stringify(body);
+
+    let res;
+    try {
+      res = await fetch(API_BASE + path, opts);
+    } catch {
+      throw new Error('Network error. Check your connection.');
+    }
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.status === 401) {
+      // Token expired or invalid — send user back to login
+      if (data.expired) Toast.error('Session expired. Please sign in again.');
+      API.setToken(null);
+      Auth.showAuthScreen();
+      throw new Error(data.error || 'Authentication required.');
+    }
+
+    if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+    return data;
+  },
+
+  get   : (p)    => API.request('GET',    p),
+  post  : (p, b) => API.request('POST',   p, b),
+  put   : (p, b) => API.request('PUT',    p, b),
+  patch : (p, b) => API.request('PATCH',  p, b),
+  del   : (p, b) => API.request('DELETE', p, b),
+};
+
+// ── Auth module ──────────────────────────────────────────────────────────────
+const Auth = {
+  currentUser: null,
+
+  switchTab(tab) {
+    document.getElementById('tab-login')   .style.display = tab === 'login'    ? '' : 'none';
+    document.getElementById('tab-register').style.display = tab === 'register' ? '' : 'none';
+    document.querySelectorAll('.auth-tab').forEach((el, i) => {
+      el.classList.toggle('active', (tab === 'login' ? i === 0 : i === 1));
+    });
+    this.clearErr();
+  },
+
+  showErr(msg) {
+    const el = document.getElementById('auth-err');
+    el.textContent = msg;
+    el.classList.add('show');
+  },
+
+  clearErr() {
+    const el = document.getElementById('auth-err');
+    el.textContent = '';
+    el.classList.remove('show');
+  },
+
+  async login() {
+    const email    = document.getElementById('l-email').value.trim();
+    const password = document.getElementById('l-password').value;
+    if (!email || !password) return this.showErr('Please enter your email and password.');
+    this.clearErr();
+    this._setBtnLoading('login-btn', 'login-btn-text', 'Signing in…', true);
+    try {
+      const data = await API.post('/auth/login', { email, password });
+      API.setToken(data.token);
+      this.currentUser = data.user;
+      this.showAppScreen();
+      await AppState.load();
+    } catch (err) {
+      this.showErr(err.message);
+    } finally {
+      this._setBtnLoading('login-btn', 'login-btn-text', 'Sign In', false);
+    }
+  },
+
+  async register() {
+    const name        = document.getElementById('r-name').value.trim();
+    const email       = document.getElementById('r-email').value.trim();
+    const password    = document.getElementById('r-password').value;
+    const institution = document.getElementById('r-institution').value.trim();
+    if (!name || !email || !password) return this.showErr('Name, email and password are required.');
+    this.clearErr();
+    this._setBtnLoading('register-btn', 'register-btn-text', 'Creating account…', true);
+    try {
+      const data = await API.post('/auth/register', { name, email, password, institution });
+      API.setToken(data.token);
+      this.currentUser = data.user;
+      this.showAppScreen();
+      await AppState.load();
+      Toast.success('Welcome to Jobify! 🎉');
+    } catch (err) {
+      this.showErr(err.message);
+    } finally {
+      this._setBtnLoading('register-btn', 'register-btn-text', 'Create Account', false);
+    }
+  },
+
+  logout() {
+    API.setToken(null);
+    this.currentUser = null;
+    AppState.reset();
+    this.showAuthScreen();
+    Toast.info('Signed out successfully.');
+  },
+
+  showAuthScreen() {
+    document.getElementById('auth-screen').style.display = '';
+    document.getElementById('app-screen').style.display  = 'none';
+  },
+
+  showAppScreen() {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display  = '';
+    if (this.currentUser) {
+      const u = this.currentUser;
+      document.getElementById('user-name').textContent   = u.name || '';
+      document.getElementById('user-inst').textContent   = u.institution || u.email || '';
+      document.getElementById('user-avatar').textContent = (u.name || '?')[0].toUpperCase();
+    }
+  },
+
+  async init() {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) { this.showAuthScreen(); return; }
+    API.setToken(token);
+    try {
+      const data = await API.get('/auth/me');
+      this.currentUser = data.user;
+      this.showAppScreen();
+      await AppState.load();
+    } catch {
+      API.setToken(null);
+      this.showAuthScreen();
+    }
+  },
+
+  _setBtnLoading(btnId, textId, label, loading) {
+    const btn = document.getElementById(btnId);
+    const txt = document.getElementById(textId);
+    if (txt) txt.textContent = label;
+    if (btn) btn.disabled = loading;
+  },
+};
+
+// ── App state & rendering ────────────────────────────────────────────────────
+const AppState = {
+  apps: [],
+  stats: { total:0, applied:0, interviews:0, offers:0, rejected:0 },
+  filter: 'All',
+  view: 'list',
+  searchTimer: null,
+
+  reset() {
+    this.apps   = [];
+    this.stats  = { total:0, applied:0, interviews:0, offers:0, rejected:0 };
+    this.filter = 'All';
+    document.getElementById('content').innerHTML = '';
+    document.getElementById('foot').textContent  = '';
+  },
+
+  async load() {
+    try {
+      const q    = (document.getElementById('srch')?.value || '').trim();
+      const params = new URLSearchParams({ limit: 200 });
+      if (this.filter !== 'All') params.set('status', this.filter);
+      if (q) params.set('q', q);
+
+      const data = await API.get(`/applications?${params}`);
+      this.apps  = data.applications || [];
+      this.stats = data.stats || this.stats;
+      this.render();
+    } catch (err) {
+      Toast.error(err.message);
+    }
+  },
+
+  setFilter(f, el) {
+    this.filter = f;
+    document.querySelectorAll('#filter-group .fb').forEach(b => b.classList.remove('act'));
+    el.classList.add('act');
+    this.load();
+  },
+
+  setView(v) {
+    this.view = v;
+    document.getElementById('vt-list') .classList.toggle('act', v === 'list');
+    document.getElementById('vt-board').classList.toggle('act', v === 'board');
+    this.render();
+  },
+
+  onSearch() {
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => this.load(), 280);
+  },
+
+  render() {
+    this._updateStats();
+    if (this.view === 'list') this._renderList();
+    else                      this._renderBoard();
+  },
+
+  _updateStats() {
+    const { total, interviews, offers, rejected } = this.stats;
+    document.getElementById('s-total').textContent = total;
+    document.getElementById('s-int')  .textContent = interviews;
+    document.getElementById('s-off')  .textContent = offers;
+    document.getElementById('s-rej')  .textContent = rejected;
+    document.getElementById('s-ir')   .textContent = total ? Math.round(interviews/total*100)+'% rate' : '';
+    document.getElementById('s-or')   .textContent = total ? Math.round(offers/total*100)+'% rate' : '';
+    document.getElementById('nb')     .textContent = total;
+
+    const ob = document.getElementById('ob');
+    if (offers > 0) {
+      ob.style.display = '';
+      document.getElementById('ob-text').textContent = `🎉 ${offers} offer${offers>1?'s':''} received`;
+    } else {
+      ob.style.display = 'none';
+    }
+
+    const i  = interviews, o = offers;
+    document.getElementById('sub-line').innerHTML =
+      `${total} tracked · <span style="color:#fde68a">${i} interview${i!==1?'s':''}</span>` +
+      (o > 0 ? ` · <span style="color:#6ee7b7">${o} offer${o!==1?'s':''}</span>` : '');
+  },
+
+  _badge(status) {
+    const m = STATUS_META[status] || STATUS_META.Applied;
+    return `<span class="badge" style="background:${m.bg};border:1px solid ${m.bd};color:${m.c}">` +
+           `<span class="bdot" style="background:${m.c}"></span>${esc(status)}</span>`;
+  },
+
+  _renderList() {
+    const ct = document.getElementById('content');
+    const ft = document.getElementById('foot');
+    ft.textContent = `${this.apps.length} application${this.apps.length!==1?'s':''} · Jobify v1.0`;
+
+    if (this.apps.length === 0) {
+      ct.innerHTML = `<div class="tbl"><div class="content-skeleton">
+        <div style="font-size:28px;margin-bottom:10px">📋</div>
+        <div style="font-weight:700;color:var(--tx);margin-bottom:4px">No applications found</div>
+        <div style="font-size:12px">Add one using the button above, or adjust your filters</div>
+      </div></div>`;
+      return;
+    }
+
+    let rows = '';
+    this.apps.forEach(a => {
+      const priorityDot = a.priority === 'High'   ? '#f87171'
+                        : a.priority === 'Medium' ? '#fbbf24'
+                        :                           '#6ee7b7';
+      rows += `<div class="tr">
+        <div>
+          <div class="co" style="display:flex;align-items:center;gap:6px">
+            <span title="Priority: ${esc(a.priority)}" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${priorityDot};flex-shrink:0"></span>
+            ${esc(a.company)}
+          </div>
+          ${a.location ? `<div class="loc">📍 ${esc(a.location)}</div>` : ''}
+        </div>
+        <div class="ro">${esc(a.role)}</div>
+        <div>${this._badge(a.status)}</div>
+        <div class="dt">${a.date_applied ? esc(a.date_applied) : '—'}</div>
+        <div class="nt" title="${esc(a.notes)}">${a.notes ? esc(a.notes) : '—'}</div>
+        <div class="ra">
+          <button class="ab" onclick="Modal.openEdit(${a.id})">Edit</button>
+          <button class="db" onclick="AppState.deleteApp(${a.id})">✕</button>
+        </div>
+      </div>`;
+    });
+
+    ct.innerHTML = `<div class="tbl">
+      <div class="th"><span>Company</span><span>Role</span><span>Status</span>
+        <span>Date</span><span>Notes</span><span style="text-align:right">Actions</span></div>
+      ${rows}
+    </div>`;
+  },
+
+  _renderBoard() {
+    const ct = document.getElementById('content');
+    const ft = document.getElementById('foot');
+    ft.textContent = `${this.apps.length} application${this.apps.length!==1?'s':''} · Jobify v1.0`;
+
+    const cols = ['Applied','Interview','Offer','Rejected'];
+    let html = '<div class="kb">';
+    cols.forEach(s => {
+      const m     = STATUS_META[s];
+      const items = this.apps.filter(a => a.status === s);
+      html += `<div>
+        <div class="kc-hdr">
+          <span class="kc-dot" style="background:${m.c}"></span>
+          <span class="kc-lbl">${s}</span>
+          <span class="kc-cnt" style="background:${m.bg};color:${m.c};border:1px solid ${m.bd}">${items.length}</span>
+        </div>`;
+      if (items.length === 0) {
+        html += `<div style="background:var(--surf);border:1px dashed var(--bd);border-radius:10px;padding:20px;text-align:center;color:var(--mu);font-size:12px">No entries</div>`;
+      } else {
+        items.forEach(a => {
+          html += `<div class="kc">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:6px">
+              <div style="font-weight:700;font-size:13px;line-height:1.3">${esc(a.company)}</div>
+              <button class="ab" onclick="Modal.openEdit(${a.id})" style="font-size:10px;padding:2px 7px;flex-shrink:0">Edit</button>
+            </div>
+            <div style="font-size:11px;color:var(--mu);line-height:1.4">${esc(a.role)}</div>
+            ${a.location ? `<div style="font-size:10px;color:var(--su);margin-top:3px">📍 ${esc(a.location)}</div>` : ''}
+            ${a.salary   ? `<div style="font-size:10px;color:#6ee7b7;margin-top:3px">💰 ${esc(a.salary)}</div>` : ''}
+            ${a.notes    ? `<div style="font-size:11px;color:var(--mu);border-top:1px solid var(--bd);padding-top:7px;margin-top:7px;line-height:1.5">${esc(a.notes)}</div>` : ''}
+            ${a.date_applied ? `<div style="font-size:10px;color:var(--su);margin-top:7px;font-family:'Courier New',monospace">${esc(a.date_applied)}</div>` : ''}
+          </div>`;
+        });
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+    ct.innerHTML = html;
+  },
+
+  async deleteApp(id) {
+    if (!confirm('Delete this application?')) return;
+    try {
+      await API.del(`/applications/${id}`);
+      Toast.success('Application deleted.');
+      await this.load();
+    } catch (err) {
+      Toast.error(err.message);
+    }
+  },
+};
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+const Modal = {
+  editId: null,
+
+  open() {
+    this.editId = null;
+    ['f-co','f-ro','f-lo','f-sa','f-url','f-no'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('f-st').value = 'Applied';
+    document.getElementById('f-pr').value = 'Medium';
+    document.getElementById('f-dt').value = '';
+    document.getElementById('m-title').textContent = 'New Opportunity';
+    document.getElementById('m-sub').textContent   = 'Add a new role to your tracker';
+    document.getElementById('m-btn').textContent   = 'Add Application';
+    document.getElementById('m-save-btn').disabled = false;
+    this._clearErr();
+    document.getElementById('mw').classList.add('open');
+    setTimeout(() => document.getElementById('f-co').focus(), 80);
+  },
+
+  openEdit(id) {
+    const a = AppState.apps.find(x => x.id === id);
+    if (!a) return;
+    this.editId = id;
+    document.getElementById('f-co') .value = a.company       || '';
+    document.getElementById('f-ro') .value = a.role          || '';
+    document.getElementById('f-st') .value = a.status        || 'Applied';
+    document.getElementById('f-pr') .value = a.priority      || 'Medium';
+    document.getElementById('f-dt') .value = a.date_applied  || '';
+    document.getElementById('f-lo') .value = a.location      || '';
+    document.getElementById('f-sa') .value = a.salary        || '';
+    document.getElementById('f-url').value = a.job_url       || '';
+    document.getElementById('f-no') .value = a.notes         || '';
+    document.getElementById('m-title').textContent = 'Edit Application';
+    document.getElementById('m-sub').textContent   = 'Update the details below';
+    document.getElementById('m-btn').textContent   = 'Save Changes';
+    document.getElementById('m-save-btn').disabled = false;
+    this._clearErr();
+    document.getElementById('mw').classList.add('open');
+  },
+
+  close() {
+    document.getElementById('mw').classList.remove('open');
+    this._clearErr();
+  },
+
+  async save() {
+    const company = document.getElementById('f-co').value.trim();
+    const role    = document.getElementById('f-ro').value.trim();
+    if (!company) { this._showErr('Company name is required.'); return; }
+    if (!role)    { this._showErr('Role is required.'); return; }
+
+    const payload = {
+      company,
+      role,
+      status      : document.getElementById('f-st').value,
+      priority    : document.getElementById('f-pr').value,
+      date_applied: document.getElementById('f-dt').value  || null,
+      location    : document.getElementById('f-lo').value.trim()  || null,
+      salary      : document.getElementById('f-sa').value.trim()  || null,
+      job_url     : document.getElementById('f-url').value.trim() || null,
+      notes       : document.getElementById('f-no').value.trim()  || null,
+    };
+
+    const btn = document.getElementById('m-save-btn');
+    const txt = document.getElementById('m-btn');
+    btn.disabled = true;
+    const origLabel = txt.textContent;
+    txt.textContent = 'Saving…';
+
+    try {
+      if (this.editId) {
+        await API.put(`/applications/${this.editId}`, payload);
+        Toast.success('Application updated!');
+      } else {
+        await API.post('/applications', payload);
+        Toast.success('Application added!');
+      }
+      this.close();
+      await AppState.load();
+    } catch (err) {
+      this._showErr(err.message);
+      btn.disabled = false;
+      txt.textContent = origLabel;
+    }
+  },
+
+  _showErr(msg) {
+    const el = document.getElementById('modal-err');
+    el.textContent = msg;
+    el.classList.add('show');
+  },
+  _clearErr() {
+    const el = document.getElementById('modal-err');
+    if (el) { el.textContent = ''; el.classList.remove('show'); }
+  },
+};
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') Modal.close();
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('srch')?.focus();
+  }
+  // Ctrl/Cmd+N — new application
+  if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+    if (document.getElementById('app-screen').style.display !== 'none') {
+      e.preventDefault();
+      Modal.open();
+    }
+  }
+});
+
+// Enter key submits auth forms
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const as = document.getElementById('auth-screen');
+  if (as && as.style.display !== 'none') {
+    const loginTab = document.getElementById('tab-login');
+    if (loginTab && loginTab.style.display !== 'none') Auth.login();
+    else Auth.register();
+  }
+});
+
+// Click backdrop to close modal
+document.getElementById('mw').addEventListener('click', function(e) {
+  if (e.target === this) Modal.close();
+});
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+Auth.init();
+</script>
+</body>
+</html>
